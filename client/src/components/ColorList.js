@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { axiosWithAuth } from '../Axios/axiosWithAuth';
 
+
 const initialColor = {
   color: "",
   code: { hex: "" }
@@ -49,13 +50,6 @@ const ColorList = ({ colors, updateColors }) => {
   };
 
 
-  const handleChange = e => {
-    e.preventDefault();
-    setAddColor({
-      ...addColor,
-      [e.target.name]: e.target.value
-    });
-  }
 
   const handleSubmit = e => {
     e.preventDefault();
@@ -81,7 +75,8 @@ const ColorList = ({ colors, updateColors }) => {
             name='color name' 
             type='text' 
             values={addColor.color} 
-            onChange={handleChange} 
+            onChange={e =>
+              setAddColor({ ...addColor, color: e.target.value })} 
             placeholder='Color Name'
           />
         </label>
@@ -90,11 +85,15 @@ const ColorList = ({ colors, updateColors }) => {
             name='hex name' 
             type='text' 
             values={addColor.code.hex} 
-            onChange={handleChange} 
+            onChange={e =>
+              setAddColor({
+                ...addColor,
+                code: { hex: e.target.value }
+              })} 
             placeholder='Hex Code'
           />
         </label>
-        <button type='submit'>Add Color</button>
+        <button className='button' type='submit'>Add Color</button>
       </form>
       <p>colors</p>
       <ul>
