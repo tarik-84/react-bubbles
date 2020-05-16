@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
+import { axiosWithAuth } from '../Axios/axiosWithAuth';
 
 const initialColor = {
   color: "",
@@ -7,9 +7,14 @@ const initialColor = {
 };
 
 const ColorList = ({ colors, updateColors }) => {
-  console.log(colors);
+  console.log('tar', colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+  const [addColor, setAddColor] = useState({
+    color: '',
+    code: { hex: '' },
+    id: Date.now()
+  })
 
   const editColor = color => {
     setEditing(true);
@@ -18,17 +23,79 @@ const ColorList = ({ colors, updateColors }) => {
 
   const saveEdit = e => {
     e.preventDefault();
-    // Make a put request to save your updated color
-    // think about where will you get the id from...
-    // where is is saved right now?
+    axiosWithAuth()
+    .put(`/colors/${colorToEdit.id}`, colorToEdit)
+    .then(() => {
+      axiosWithAuth()
+      .get(`colors`)
+      .then(response => updateColors(response.data))
+      .catch(error => console.log(error));
+      setEditing(false) 
+    })
+    .catch(err => console.log(err))
   };
 
   const deleteColor = color => {
-    // make a delete request to delete this color
+    axiosWithAuth()
+    .delete(`/colors/${color.id}`)
+    .then(() => {
+      axiosWithAuth()
+          .get("/colors")
+          .then(response => updateColors(response.data))
+          .catch(error => console.log(error));
+        setEditing(false);
+      })
+    .catch(err => console.log(err))
   };
+
+
+  const handleChange = e => {
+    e.preventDefault();
+    setAddColor({
+      ...addColor,
+      [e.target.name]: e.target.value
+    });
+  }
+
+  const handleSubmit = e => {
+    e.preventDefault();
+    axiosWithAuth()
+    .post(`/colors`, addColor)
+    .then(() =>{
+      axiosWithAuth()
+      .get(`colors`)
+      .then(response => updateColors(response.data))
+      .catch(error => console.log(error));
+      setEditing(false)
+    })
+    .catch(error => console.log(error));
+  }
 
   return (
     <div className="colors-wrap">
+      
+      <form onSubmit={handleSubmit}>
+        <h3>Add A New Color</h3>
+        <label>Color Name:
+          <input
+            name='color name' 
+            type='text' 
+            values={addColor.color} 
+            onChange={handleChange} 
+            placeholder='Color Name'
+          />
+        </label>
+        <label>Hex Code
+          <input
+            name='hex name' 
+            type='text' 
+            values={addColor.code.hex} 
+            onChange={handleChange} 
+            placeholder='Hex Code'
+          />
+        </label>
+        <button type='submit'>Add Color</button>
+      </form>
       <p>colors</p>
       <ul>
         {colors.map(color => (
@@ -80,8 +147,6 @@ const ColorList = ({ colors, updateColors }) => {
           </div>
         </form>
       )}
-      <div className="spacer" />
-      {/* stretch - build another form here to add a color */}
     </div>
   );
 };
